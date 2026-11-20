@@ -1,0 +1,67 @@
+{
+  "name": "dsh-followup",
+  "version": "0.1.3",
+  "private": true,
+  "type": "module",
+  "description": "Personal ideas and follow-up todos for DeepSeek Harness",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "ARCHITECTURE.md",
+    "DEVELOPMENT_PLAN.md",
+    "VERIFICATION.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-chat",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-client-modules"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "preview": "node scripts/preview.mjs"
+  },
+  "devDependencies": {
+    "@radix-ui/react-checkbox": "1.3.3",
+    "@radix-ui/react-dialog": "1.1.15",
+    "@radix-ui/react-label": "2.1.7",
+    "@radix-ui/react-popover": "1.1.15",
+    "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-slot": "1.2.3",
+    "@radix-ui/react-tabs": "1.1.13",
+    "@types/node": "22.15.30",
+    "@types/react": "18.3.23",
+    "@types/react-dom": "18.3.7",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "date-fns": "3.6.0",
+    "esbuild": "0.25.12",
+    "lucide-react": "0.468.0",
+    "postcss": "8.5.6",
+    "react": "18.3.1",
+    "react-day-picker": "^9.11.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "2.6.0",
+    "tailwindcss": "3.4.17",
+    "tailwindcss-animate": "1.0.7",
+    "typescript": "5.8.3"
+  }
+}

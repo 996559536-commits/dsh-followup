@@ -1,0 +1,15 @@
+node_modules/
+lib/
+output/
+.preview-data/
+.test-profile/
+.test-home/
+.playwright-cli/
+.desktop-backup/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+*.tgz
