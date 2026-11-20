@@ -1,6 +1,8 @@
 # DSH Follow-up · 个人想法与跟进待办
 
-v0.1.4，面向 DeepSeek Harness Desktop。
+当前稳定版：**[v0.1.4](https://github.com/996559536-commits/dsh-followup/releases/tag/v0.1.4)**，面向 DeepSeek Harness Desktop。
+
+[下载 v0.1.4 安装包](https://github.com/996559536-commits/dsh-followup/releases/download/v0.1.4/dsh-followup-0.1.4.tgz) · [最新发布](https://github.com/996559536-commits/dsh-followup/releases/latest) · [版本记录](CHANGELOG.md)
 
 记录你自己的想法，以及与 Agent 聊完之后仍需要自己推进的事项。只需标题即可记录，之后再分类、安排日期、设置提醒和标记完成。
 
@@ -25,23 +27,25 @@ v0.1.4，面向 DeepSeek Harness Desktop。
 
 本地打包可在构建后执行 `npm run release:prepare`，产物在 `output/release/`。自动发布流程见 [.github/workflows/release.yml](.github/workflows/release.yml)。
 
-## v0.1.3 布局修复
+## 历史版本
+
+### v0.1.3 布局修复
 
 统计表在剩余内容区域独立滚动，表头固定；支持滚轮和键盘浏览末行。标题栏使用 DSH 提供的 `--dsh-frame-leading-clearance`，侧栏收起和全屏切换时自动避让窗口与导航按钮。
 
-## v0.1.2 增补
+### v0.1.2 增补
 
 统计列表的日期弹层新增「全部日期」，统计卡片与表格同时按全部日期计算；选择日期、今天或前后月份可恢复月份筛选。会话「加入待办」使用列表加号图标，保存后「已加入待办」切换列表勾选图标，点击可查看已有待办，删除后恢复加号。
 
-## v0.1.1 交互修复
+### v0.1.1 交互修复
 
 日期与时间合在同一面板，参考 Ant Design 的日历加时分双列交互，继续使用 shadcn / Radix 的组件基础。支持任意分钟、今天/明天/一周后、此刻、仅日期和不设截止时间；点击确定后生效，外点或 Escape 取消临时选择。已移除系统原生时间弹窗和字段外的清除 ×。输入框焦点样式、详情标题、关闭按钮热区、弹窗与转发侧栏尺寸也已按设计校准。
 
 ## 安装到 Desktop
 
-从 [GitHub Releases](https://github.com/996559536-commits/dsh-followup/releases) 下载最新版 `.tgz` 安装包。源码包含完整开发工程，安装包包含构建后的运行时文件。首次从 v0.1.3 升级到 v0.1.4 后才具备版本检测能力。
+当前安装包为 [dsh-followup-0.1.4.tgz](https://github.com/996559536-commits/dsh-followup/releases/download/v0.1.4/dsh-followup-0.1.4.tgz)，后续版本可从 [最新发布](https://github.com/996559536-commits/dsh-followup/releases/latest) 获取。源码包含完整开发工程，安装包包含构建后的运行时文件。旧版用户需先手动升级到 v0.1.4，之后即可使用版本检测。
 
-v0.1.3 已安装到开发机的 Desktop profile，并在真实桌面 App 中确认统计表可滚动到首末行、表头固定，以及全屏收起侧栏后的标题避让。其他交互与提醒的验证见 [VERIFICATION.md](VERIFICATION.md)。本机配置备份、用户数据和会话不会上传至仓库或打包。
+v0.1.4 已安装到开发机的 Desktop profile，并在真实桌面 App 中完成手动检查更新验收，显示「已是最新版本」。统计表滚动、固定表头及全屏标题避让等历次验证见 [VERIFICATION.md](VERIFICATION.md)。本机配置备份、用户数据和会话不会上传至仓库或打包。
 
 从源码安装时，先在本项目目录执行 `npm ci` 和 `npm run build`，再到 DSH「插件 → 添加插件」输入该目录的绝对路径，点击安装并按宿主提示重新加载。
 
