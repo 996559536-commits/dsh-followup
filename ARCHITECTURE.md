@@ -237,3 +237,13 @@ dsh-followup/
 - 已核对实际打包运行时的 `dsh-app-boot/src/profile-context.ts`：`ctx.profileContext.dir` 是启动器公开的当前 profile 路径；原生 runtime 为内部实现。
 - 旧社区任务看板的 Host/Client 分层、持久化和路由仅供参考，其 Agent 执行/cron 领域不复用。
 - 当前文件是设计决策，实施进度与实际验证结果分别记录在开发计划与验证报告中。
+
+## 14. 版本检测与发布
+
+Host 的 UpdateChecker 在启动及每 6 小时读取固定公开仓库最新正式 Release 的 `update.json`；多窗口共享缓存。手动检查间隔至少 1 分钟，自动检查失败后 30 分钟重试。请求超时 10 秒、响应上限 32 KiB；不携带用户数据或认证信息，卸载时取消在途请求。
+
+只接受稳定的 x.y.z 版本，按数值比较；验证 schema、发布时间、校验和与固定仓库下的发行页和安装包 URL。失败时保留已知版本。`GET /dsh-followup/api/updates` 读取状态，`POST /dsh-followup/api/updates/check` 手动检查，沿用 Host 授权和 JSON 请求要求。
+
+Client 的 UpdateStore 独立于待办数据，按分钟读取本地缓存。shadcn 版本面板和全局提示卡提供下载入口；关闭提示仅按版本记录在 localStorage，连接切换丢弃旧响应。下载后手动安装，不执行下载的代码。
+
+main 推送后的 GitHub Actions 构建、检查、测试；已有正式版本则跳过发布。新版本先建立 draft Release，上传安装包、描述文件和校验文件，最后公开，避免提醒尚不能安装的版本。公开附件下载不消耗 GitHub API 匿名调用配额。

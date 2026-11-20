@@ -7,6 +7,8 @@ import {TodoStore} from '../store';
 import {UIController} from '../controller';
 import {GlobalUI} from '../components/reminders';
 import {placeAssistantAction} from './placement';
+import type {UpdateStore} from '../updates';
+import {UpdateNotice} from '../components/updates';
 
 interface Closing {finalNode:{messageId?:string;seq:number};blocks:{kind:string;text?:string}[]}
 interface Chat {timeline:{turns:Map<unknown,{data:Map<string,{closing?:Closing|null}>}>}}
@@ -24,7 +26,7 @@ interface ClientContext {
   sessions:{list:{getSnapshot():{byId:Record<string,SessionRow>}};refresh():Promise<void>};
   uiWorkspace:{openSession(id:string):void};
 }
-export function installIntegration(ctx:ClientContext,store:TodoStore,controller:UIController){
+export function installIntegration(ctx:ClientContext,store:TodoStore,controller:UIController,updates:UpdateStore){
   const openSource=async(source:Source)=>{
     const scope=store.getSnapshot().data?.scopeId;
     if(scope!==source.scopeId)throw new Error('这项来源属于另一个数据空间');
@@ -47,8 +49,8 @@ export function installIntegration(ctx:ClientContext,store:TodoStore,controller:
     const unsub=ctx.slots.subscribe('sidebar.panellist',()=>{if(!scheduled){scheduled=true;queueMicrotask(()=>{scheduled=false;if(!disposed)sync();});}});sync();
     return()=>{disposed=true;unsub();off?.();};
   }),'dsh-followup: navigation entry');
-  ctx.effect(()=>ctx.slots.inject('main',()=>ctx.slots.register({name:'main',key:'dsh-followup'},()=> <App store={store} controller={controller} onSource={openSource}/>)),'dsh-followup: main panel');
-  ctx.effect(()=>ctx.slots.inject('shell.overlay',()=>ctx.slots.register({name:'shell.overlay',id:'dsh-followup'},()=> <GlobalUI store={store} controller={controller} onSource={openSource}/>)),'dsh-followup: editor and reminders');
+  ctx.effect(()=>ctx.slots.inject('main',()=>ctx.slots.register({name:'main',key:'dsh-followup'},()=> <App store={store} controller={controller} updates={updates} onSource={openSource}/>)),'dsh-followup: main panel');
+  ctx.effect(()=>ctx.slots.inject('shell.overlay',()=>ctx.slots.register({name:'shell.overlay',id:'dsh-followup'},()=> <><GlobalUI store={store} controller={controller} onSource={openSource}/><UpdateNotice updates={updates}/></>)),'dsh-followup: editor and reminders');
   function AssistantAction({sessionId,messageId,useChat}:{sessionId:string;messageId:string;useChat:<T>(select:(chat:Chat)=>T)=>T}){
     const anchor=React.useRef<HTMLSpanElement>(null);const [target,setTarget]=React.useState<HTMLElement|null>(null);
     const snapshot=React.useSyncExternalStore(store.subscribe,store.getSnapshot);
@@ -75,5 +77,5 @@ export function installIntegration(ctx:ClientContext,store:TodoStore,controller:
     return <><span ref={anchor} className="dsh-followup" style={{display:target?'none':'inline-flex'}}>{target?null:action}</span>{target&&createPortal(action,target)}</>;
   }
   ctx.effect(()=>ctx.slots.inject('conversation.chat.assistant-actions',()=>ctx.slots.register({name:'conversation.chat.assistant-actions',id:'dsh-followup',order:100},AssistantAction)),'dsh-followup: forward action');
-  ctx.effect(()=>ctx.on('connection/reset',()=>{controller.reset();store.reset();}),'dsh-followup: scope reset');
+  ctx.effect(()=>ctx.on('connection/reset',()=>{controller.reset();store.reset();updates.reset();}),'dsh-followup: scope reset');
 }

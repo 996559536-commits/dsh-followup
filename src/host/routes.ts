@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { DomainError } from '../core/model';
 import type { TodoService } from './service';
+import type { UpdateChecker } from './updates';
 
 export const API = '/dsh-followup/api';
 export interface Route { kind: 'prefix'; path: string; handler(req: IncomingMessage, res: ServerResponse): void | Promise<void> }
@@ -14,12 +15,14 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
   for await(const chunk of req) { const b=Buffer.from(chunk); size+=b.length; if(size>64*1024) throw new DomainError('too-large','内容过长',413); chunks.push(b); }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw new DomainError('invalid-json','JSON 格式错误'); }
 }
-export function createRoutes(service: TodoService, allowed: (req: IncomingMessage)=>boolean) {
+export function createRoutes(service: TodoService, allowed: (req: IncomingMessage)=>boolean, updates?: Pick<UpdateChecker,'snapshot'|'check'>) {
   const clients=new Set<ServerResponse>();
   const route: Route={kind:'prefix',path:API,handler:async(req,res)=>{
     if(!allowed(req)) return json(res,403,{error:{code:'forbidden',message:'当前请求没有访问权限'}});
     const path=new URL(req.url??'/', 'http://dsh.internal').pathname;
     try {
+      if(path===`${API}/updates` && req.method==='GET' && updates) return json(res,200,{result:updates.snapshot()});
+      if(path===`${API}/updates/check` && req.method==='POST' && updates) {await readBody(req);return json(res,200,{result:await updates.check(true)});}
       if(path===`${API}/state` && req.method==='GET') return json(res,200,{result:service.snapshot()});
       if(path===`${API}/command` && req.method==='POST') return json(res,200,{result:await service.command(await readBody(req))});
       if(path===`${API}/notification-claim` && req.method==='POST') return json(res,200,{result:await service.claim(await readBody(req))});

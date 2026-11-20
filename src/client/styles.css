@@ -32,6 +32,20 @@
 .dsh-followup .quick-add input {border:0;padding:0;background:transparent;box-shadow:none;height:38px;min-width:0;outline:none;font-size:14px;line-height:22px;--tw-ring-shadow:0 0 #0000;}
 .dsh-followup .quick-add>span {font-size:12px;color:#a1a1aa;}
 .dsh-followup .header-actions {display:flex;gap:12px;align-items:center;}
+.dsh-followup .version-trigger {font-size:12px;color:hsl(var(--muted-foreground));padding:0 8px;}
+.dsh-followup .version-trigger.has-update {color:hsl(var(--foreground));background:hsl(var(--muted));}
+.dsh-followup .update-popover {width:320px;max-width:calc(100vw - 32px);padding:20px;display:flex;flex-direction:column;gap:14px;}
+.dsh-followup .update-heading {display:flex;flex-direction:column;gap:4px;}
+.dsh-followup .update-heading strong,.dsh-followup .update-notice-heading strong {font-size:14px;font-weight:600;}
+.dsh-followup .update-heading>span,.dsh-followup .update-hint {font-size:12px;line-height:19px;color:hsl(var(--muted-foreground));}
+.dsh-followup .update-version {display:flex;justify-content:space-between;font-size:13px;}
+.dsh-followup .update-status {display:flex;gap:8px;align-items:center;font-size:13px;line-height:21px;}
+.dsh-followup .update-notes {font-size:12px;line-height:20px;white-space:pre-wrap;max-height:140px;overflow:auto;}
+.dsh-followup .update-actions {display:flex;gap:8px;flex-wrap:wrap;}
+.dsh-followup .update-notice {position:fixed;right:24px;bottom:24px;z-index:95;width:340px;max-width:calc(100vw - 32px);padding:20px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;border:1px solid hsl(var(--border));border-radius:10px;background:hsl(var(--background));box-shadow:0 4px 20px #00000012;pointer-events:auto;}
+.dsh-followup .update-notice-heading {display:flex;align-items:center;gap:8px;padding-right:24px;}
+.dsh-followup .update-notice-close {position:absolute;top:10px;right:10px;width:32px;height:32px;}
+.dsh-followup .update-notice>p:not(.update-hint) {font-size:13px;}
 .dsh-followup .header-actions>button:last-child {min-width:120px;font-size:13px;}
 .dsh-followup .board-main {padding:32px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0;overflow:auto;background:var(--board-fill);}
 .dsh-followup .board-toolbar {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;min-height:44px;}

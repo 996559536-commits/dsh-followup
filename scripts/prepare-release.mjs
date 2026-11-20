@@ -1,0 +1,21 @@
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+
+const pkg=JSON.parse(await readFile('package.json','utf8'));
+const version=pkg.version;
+if(!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version))throw new Error('Release requires a stable x.y.z version');
+const folder=resolve(process.argv[2]??'output/release');await mkdir(folder,{recursive:true});
+const [packed]=JSON.parse(execFileSync('npm',['pack','--pack-destination',folder,'--json'],{encoding:'utf8'}));
+const bytes=await readFile(join(folder,packed.filename));const sha256=createHash('sha256').update(bytes).digest('hex');
+const changelog=await readFile('CHANGELOG.md','utf8');
+const section=changelog.split(`## ${version}\n`)[1]?.split('\n## ')[0]?.trim();
+const notes=(section??'包含功能改进与问题修复。').slice(0,2000);
+const base='https://github.com/996559536-commits/dsh-followup/releases';
+const manifest={schemaVersion:1,version,releaseUrl:`${base}/tag/v${version}`,downloadUrl:`${base}/download/v${version}/${packed.filename}`,sha256,publishedAt:new Date().toISOString(),notes};
+const manifestText=JSON.stringify(manifest,null,2)+'\n';await writeFile(join(folder,'update.json'),manifestText);
+const manifestSha=createHash('sha256').update(manifestText).digest('hex');
+await writeFile(join(folder,'SHA256SUMS'),`${sha256}  ${packed.filename}\n${manifestSha}  update.json\n`);
+await writeFile(join(folder,'RELEASE_NOTES.md'),`${notes}\n\n下载 \`${packed.filename}\` 安装，\`SHA256SUMS\` 用于文件校验。安装与通知限制见 README。\n`);
+console.log(JSON.stringify({version,folder,package:packed.filename,sha256,files:packed.entryCount}));

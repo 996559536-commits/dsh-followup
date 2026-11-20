@@ -5,9 +5,11 @@ import {TodoStore} from './client/store';
 import {UIController} from './client/controller';
 import {installIntegration} from './client/dsh/integration';
 import {installStyles} from './client/styles';
+import {UpdateStore} from './client/updates';
 
 installStyles();
 const store=new TodoStore();const controller=new UIController();store.start();
+const updates=new UpdateStore(store);updates.start();
 type Entry={options:{name:string;id?:string;key?:string;order?:number;label?:string|(()=>string)};component:React.ComponentType<any>};
 const entries:Entry[]=[];const listeners=new Set<()=>void>();const disposers:(()=>void)[]=[];
 let panel='dsh-followup';let version=0;
@@ -29,7 +31,7 @@ const context={slots,
   effect(fn:()=>void|(()=>void)){const off=fn();if(off)disposers.push(off);},
   on(_event:string,_listener:()=>void){return()=>{};},
 };
-installIntegration(context,store,controller);
+installIntegration(context,store,controller,updates);
 function Shell(){
   React.useSyncExternalStore(listener=>{listeners.add(listener);return()=>{listeners.delete(listener);};},()=>version);
   const boardOnly=new URL(location.href).searchParams.has('board');
@@ -42,4 +44,4 @@ function Shell(){
   </div>;
 }
 createRoot(document.getElementById('root')!).render(<Shell/>);
-window.addEventListener('pagehide',()=>{store.dispose();controller.dispose();for(const off of disposers.reverse())off();});
+window.addEventListener('pagehide',()=>{updates.dispose();store.dispose();controller.dispose();for(const off of disposers.reverse())off();});

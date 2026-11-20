@@ -12,10 +12,12 @@ import { Calendar } from './components/ui/calendar';
 import { zhCN } from 'react-day-picker/locale';
 import { ReminderButton } from './components/reminders';
 import { Inbox, MonthView, Quadrants, StatisticsView, WeekView } from './views/board-views';
+import type { UpdateStore } from './updates';
+import { UpdateButton } from './components/updates';
 
 type View='urgency'|'month'|'week'|'stats';type Filter='inbox'|'all'|'open'|'done';
 const views=[['urgency','紧急程度',LayoutGrid],['month','月视图',CalendarDays],['week','周视图',CalendarRange],['stats','统计列表',ListChecks]] as const;
-export function App({store,controller,onSource}:{store:TodoStore;controller:UIController;onSource:(source:Source)=>Promise<void>}){
+export function App({store,controller,updates,onSource}:{store:TodoStore;controller:UIController;updates:UpdateStore;onSource:(source:Source)=>Promise<void>}){
   const state=React.useSyncExternalStore(store.subscribe,store.getSnapshot);
   const [view,setView]=React.useState<View>('urgency');const [filter,setFilter]=React.useState<Filter>('open');
   const [day,setDay]=React.useState(dateKey(new Date()));const [allDates,setAllDates]=React.useState(true);
@@ -44,7 +46,7 @@ export function App({store,controller,onSource}:{store:TodoStore;controller:UICo
   const selectDate=(next:string)=>{setDay(next);if(view==='stats')setStatsAllDates(false);else setAllDates(false);setDatePickerOpen(false);};
   const navigate=(amount:number)=>selectDate(view==='urgency'?addDays(day,amount):view==='week'?addDays(day,amount*7):moveMonth(day,amount));
   const props={todos:shown,day,onOpen:(todo:Todo)=>controller.open({todo}),onToggle:(todo:Todo)=>void toggle(todo),onSource:openSource,onNew,busyIds};
-  return <div className="dsh-followup followup-app"><header className="board-header"><h1><ListTodo size={22}/>待办看板</h1><form className="quick-add" onSubmit={event=>void quickAdd(event)}><Plus size={16}/><Input variant="plain" aria-label="快速添加待办" placeholder="添加一项待办，按 Enter 保存" value={quick} maxLength={200} disabled={saving||!state.data} onChange={event=>setQuick(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&event.nativeEvent.isComposing)event.preventDefault();}}/><span>Enter</span></form><div className="header-actions"><ReminderButton store={store} controller={controller}/><Button onClick={()=>onNew()} disabled={!state.data}><Plus size={16}/>新建待办</Button></div></header>
+  return <div className="dsh-followup followup-app"><header className="board-header"><h1><ListTodo size={22}/>待办看板</h1><form className="quick-add" onSubmit={event=>void quickAdd(event)}><Plus size={16}/><Input variant="plain" aria-label="快速添加待办" placeholder="添加一项待办，按 Enter 保存" value={quick} maxLength={200} disabled={saving||!state.data} onChange={event=>setQuick(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&event.nativeEvent.isComposing)event.preventDefault();}}/><span>Enter</span></form><div className="header-actions"><UpdateButton updates={updates}/><ReminderButton store={store} controller={controller}/><Button onClick={()=>onNew()} disabled={!state.data}><Plus size={16}/>新建待办</Button></div></header>
     <main className="board-main"><div className="board-toolbar"><Tabs value={view} onValueChange={value=>{setView(value as View);if(filter==='inbox')setFilter('open');}}><TabsList className="view-tabs" aria-label="待办视图">{views.map(([value,label,Icon])=><TabsTrigger key={value} value={value}><Icon size={16}/>{label}</TabsTrigger>)}</TabsList></Tabs>
       <div className="date-navigation"><Button size="icon" variant="outline" aria-label="上一个日期范围" onClick={()=>navigate(-1)}><ChevronLeft size={16}/></Button><Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}><PopoverTrigger asChild><Button variant="ghost" className="date-range"><CalendarDays size={16}/>{dateLabel}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar locale={zhCN} weekStartsOn={1} mode="single" selected={showingAllDates?undefined:localDate(day)} defaultMonth={localDate(day)} onSelect={date=>{if(date)selectDate(dateKey(date));}}/>{(view==='urgency'||view==='stats')&&<Button variant="ghost" className="w-full" onClick={()=>{if(view==='stats')setStatsAllDates(true);else setAllDates(true);setDatePickerOpen(false);}}>全部日期</Button>}</PopoverContent></Popover><Button size="icon" variant="outline" aria-label="下一个日期范围" onClick={()=>navigate(1)}><ChevronRight size={16}/></Button><Button variant="outline" onClick={()=>selectDate(dateKey(new Date()))}>今天</Button></div>
     </div>

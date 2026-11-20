@@ -1,0 +1,49 @@
+name: Build and publish plugin
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dsh-followup-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+      - name: Prepare package and version feed
+        run: npm run release:prepare
+      - name: Publish a new version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          TAG="v$VERSION"
+          STATE=$(gh release view "$TAG" --json isDraft --jq '.isDraft' 2>/dev/null || true)
+          if [ "$STATE" = false ]; then
+            echo "$TAG is already published. Increase package.json version to publish an update."
+            exit 0
+          fi
+          if [ "$STATE" != true ]; then
+            gh release create "$TAG" --target "$RELEASE_COMMIT" --title "DSH Follow-up $TAG" --notes-file output/release/RELEASE_NOTES.md --draft
+          fi
+          gh release upload "$TAG" "output/release/dsh-followup-$VERSION.tgz" output/release/update.json output/release/SHA256SUMS --clobber
+          gh release edit "$TAG" --draft=false --latest

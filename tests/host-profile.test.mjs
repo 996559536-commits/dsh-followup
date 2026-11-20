@@ -7,6 +7,7 @@ import {apply} from '../lib/index.js';
 
 for (const explicit of [false,true]) {
   test(explicit?'explicit data directory overrides profile storage':'Desktop Host starts with the launcher profileContext contract', {timeout:5000}, async t=>{
+    t.mock.method(globalThis,'fetch',async()=>{throw new Error('isolated test: no network');});
     const root=await mkdtemp(join(tmpdir(),'dsh-followup-profile-'));
     const ready=Promise.withResolvers();let stop;
     const expected=explicit?join(root,'configured'):join(root,'data','dsh-followup');

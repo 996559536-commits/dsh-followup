@@ -1,6 +1,6 @@
 # DSH Follow-up · 个人想法与跟进待办
 
-v0.1.3，目标运行时 DeepSeek Harness 0.2.2-rc.3。
+v0.1.4，面向 DeepSeek Harness Desktop。
 
 记录你自己的想法，以及与 Agent 聊完之后仍需要自己推进的事项。只需标题即可记录，之后再分类、安排日期、设置提醒和标记完成。
 
@@ -13,6 +13,17 @@ v0.1.3，目标运行时 DeepSeek Harness 0.2.2-rc.3。
 - 完成、撤销完成、软删除；本地持久化、版本冲突提示、请求幂等和损坏备份恢复。
 - 不提醒 / 到期时 / 提前 10 分钟。提醒在应用内保留；浏览器允许时可尝试系统通知。
 - 前端使用官方 shadcn 源码组件、Radix 和 Lucide；共享 DSH 的 React 实例，不注入全局 reset。
+- 版本自动检测、手动检查和新版下载入口；会话内也能看到插件更新提示。
+
+## 版本检测与发布
+
+启动插件后自动检查正式发布的新版本，每 6 小时复查。看板右上角的版本按钮可手动检查；发现新版时显示提示卡与下载入口。关闭提示只隐藏这个版本，下个新版仍会提示。网络失败不影响待办，已有更新信息仍保留。
+
+版本检测读取本仓库最新正式 Release 的 `update.json`，不需要 GitHub 登录或令牌，不上传待办与会话。下载后到 DSH 插件管理中安装更新；本功能不自动替换正在使用的插件。
+
+后续发布：修改 `package.json` 与 `package-lock.json` 中的版本号，在 [CHANGELOG.md](CHANGELOG.md) 添加说明，再推送 `main`。GitHub Actions 会构建、检查、测试，然后发布安装包、版本描述文件和校验文件。所有附件上传完成后才公开该 Release，DSH 随后可检测到。**只推送代码而不提高版本号，不会发布新版本或触发更新提示。**
+
+本地打包可在构建后执行 `npm run release:prepare`，产物在 `output/release/`。自动发布流程见 [.github/workflows/release.yml](.github/workflows/release.yml)。
 
 ## v0.1.3 布局修复
 
@@ -28,7 +39,7 @@ v0.1.3，目标运行时 DeepSeek Harness 0.2.2-rc.3。
 
 ## 安装到 Desktop
 
-从 [GitHub Releases](https://github.com/996559536-commits/dsh-followup/releases) 下载 `dsh-followup-0.1.3.tgz`。源码包含完整开发工程，安装包包含构建后的运行时文件。
+从 [GitHub Releases](https://github.com/996559536-commits/dsh-followup/releases) 下载最新版 `.tgz` 安装包。源码包含完整开发工程，安装包包含构建后的运行时文件。首次从 v0.1.3 升级到 v0.1.4 后才具备版本检测能力。
 
 v0.1.3 已安装到开发机的 Desktop profile，并在真实桌面 App 中确认统计表可滚动到首末行、表头固定，以及全屏收起侧栏后的标题避让。其他交互与提醒的验证见 [VERIFICATION.md](VERIFICATION.md)。本机配置备份、用户数据和会话不会上传至仓库或打包。
 
@@ -38,7 +49,7 @@ v0.1.3 已安装到开发机的 Desktop profile，并在真实桌面 App 中确�
 
 ```bash
 "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
-  plugin --profile desktop add /absolute/path/dsh-followup-0.1.3.tgz
+  plugin --profile desktop add /absolute/path/dsh-followup-0.1.4.tgz
 ```
 
 命令使用目标 profile；请保留实际安装包绝对路径。插件拥有独立 ID `dsh-followup` 和数据目录，不读取其他待办插件的数据。第一版不做旧插件迁移。

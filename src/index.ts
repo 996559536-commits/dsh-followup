@@ -2,6 +2,7 @@ import { isAbsolute, join } from 'node:path';
 import { Repository } from './host/repository';
 import { TodoService } from './host/service';
 import { createRoutes, type Route } from './host/routes';
+import { UpdateChecker } from './host/updates';
 import type { IncomingMessage } from 'node:http';
 
 interface HostContext {
@@ -17,14 +18,14 @@ export function apply(ctx: HostContext, config: {dataDir?: string}={}) {
   const dataDir=config.dataDir ?? (profile ? join(profile.dir,'data','dsh-followup') : process.env.DSH_FOLLOWUP_DATA_DIR);
   if(!dataDir || !isAbsolute(dataDir)) throw new Error('dsh-followup: 普通 Web Host 需要配置绝对路径 dataDir');
   ctx.effect(()=>{
-    const repository=new Repository(dataDir); const service=new TodoService(repository);
+    const repository=new Repository(dataDir); const service=new TodoService(repository); const updates=new UpdateChecker();
     let disposed=false; let unregister: (()=>void)|undefined; let routes: ReturnType<typeof createRoutes>|undefined;
     const ready=repository.load().then(async()=>{
       if(disposed) return;
-      routes=createRoutes(service,req=>ctx.connection.requestRejection(req)===undefined);
-      unregister=ctx.webServer.register(routes.route); service.start();
+      routes=createRoutes(service,req=>ctx.connection.requestRejection(req)===undefined,updates);
+      unregister=ctx.webServer.register(routes.route); service.start(); updates.start();
     });
     void ready.catch(error=>console.error('[dsh-followup] 初始化失败',error));
-    return async()=>{disposed=true; await ready.catch(()=>{}); unregister?.(); routes?.close(); await service.close();};
+    return async()=>{disposed=true; updates.close(); await ready.catch(()=>{}); unregister?.(); routes?.close(); await service.close();};
   },'dsh-followup: storage, API and reminders');
 }
